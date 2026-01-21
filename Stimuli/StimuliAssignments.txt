@@ -1,0 +1,19 @@
+^ = { S.bmp , N.avi , N.bmp , P.avi , P.bmp }
+
+
+--- Featural discriminations ---
+DX05* : {X1L_^ , X1R_^ }
+DY03* : {X2L_^ , X2R_^ }
+DY05* : {X3L_^ , X3R_^ }
+
+
+--- Transitive discriminations ---
+DX01* : {Y1L_^ , Y1R_^ }
+DX02* : {Y2L_^ , Y2R_^ }
+DX03* : {Y3L_^ , Y3R_^ }
+
+
+--- Transverse patterning discriminations ---
+Pair-01* | Pair-04* : { Z1L_^ , Z1R_^ }
+Pair-02* | Pair-05* : { Z2L_^ , Z2R_^ }
+Pair-03* | Pair-06* : { Z3L_^ , Z3R_^ }

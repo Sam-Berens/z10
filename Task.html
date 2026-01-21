@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>BSLT</title>
+
+<script>
+// --- TaskIO SETUP ---
+var TaskIO = {};
+TaskIO.SubjectId = null;
+TaskIO.DateTime_Start = null;
+TaskIO.ClientTimeZone = null;
+TaskIO.Trials = [];
+</script>
+
+<script src="./Assets/jquery-3.6.3.min.js"></script>
+<script src="https://unpkg.com/jspsych@7.3.1"></script>
+<script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-call-function@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-video-keyboard-response@1.1.2"></script>
+<link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css" />
+<link rel="icon" href="./Assets/Brain.png" type="image/x-icon" />
+
+<!-- Get participant IDs passed in from URL -->
+<script src="./Assets/GetPpantIds.js"></script>
+
+<!-- Exclusion check -->
+<script src="/Assets/ExclusionCheck.js"></script>
+
+<!-- Get DateTime_Start and ClientTimeZone (and add to TaskIO)  -->
+<script src="./Assets/SetDateTime.js"></script>
+
+<script>
+// Function to check if two arrays are equal
+function ArrayMatch(a,b) {
+	if (a === b) return true;
+	if (a == null || b == null) return false;
+	if (a.length !== b.length) return false;
+	for (var ii = 0; ii < a.length; ii++) {
+		if (a[ii] !== b[ii]) return false;
+	}
+	return true;
+}
+
+// Function to return a legally shuffled stimulus array
+async function GetStimuli() {
+    
+    // Preallocate a stimuli array that will be returned at the end
+    var Stim = [];
+    
+    // Set task characteristics
+    var nSets = 3;
+    var nReps = 11;
+    var nDisc = 3;
+    var nSide = 2;
+    var N = nSets*nReps*nDisc*nSide;
+	
+	// Get the illegal transitions array
+	var P1 = await fetch('./Assets/Illegal.json');
+	var Illegal = await P1.json();
+	
+	// Initialize some variables for the while loop
+	var SolutionFound = false;
+	var IterationCount = 0;
+	
+	// Loop over random permutations until we find a valid solution
+	while (!SolutionFound) {
+	    
+	    // Update the iteration counter and display our progress
+	    IterationCount++;
+	    console.log('Running order seek iteration ' + IterationCount.toString() + ';');
+	    
+	    // Request a random permutation from random.org and assign it to a variable called 'Order'
+	    //var P2 = await fetch('https://www.random.org/sequences/?min=0&max=197&col=1&format=plain&rnd=new'); 
+	    //var Response2 = await P2.text();
+	    //var Order = Response2.split('\n');
+	    //Order.pop(); // Remove the final element. I hate mutability.
+	    //Order = Order.map(function(x) {return parseInt(x,10)});
+	    var P2 = await fetch('./Assets/RandPerm.php?min=0&max=197#');
+	    var Order = await P2.json();
+        
+        // Distribute Order into a set of bigrams that encode each transition
+	    var Bigrams = []; 
+	    for (var ii = 1; ii < Order.length; ii++) {
+	    	Bigrams.push([Order[ii-1],Order[ii]]);
+	    }
+	    
+	    // Check if any of these transitions are illegal
+	    var Problem = false;
+	    for (var iBigrams = 0; iBigrams < Bigrams.length; iBigrams++) {
+	    	for (var iIllegal = 0; iIllegal < Illegal.length; iIllegal++) {
+		    	var Bool = ArrayMatch(Bigrams[iBigrams],Illegal[iIllegal]);
+			    if (Bool) {
+			    	Problem = true;
+			    	break;
+			    }
+		    }
+	    }
+	    
+	    // If no problem has been found, we have reached a solution
+	    if (!Problem) {
+	        SolutionFound = true;
+	        console.log('Solution found!');
+	    }
+	}
+	
+	// Deconstruct the permutation into a 'setId', 'discrimId', and 'sideId'
+	var setId = Order.map(function(ii) {return Math.floor(ii/(nReps*nDisc*nSide))});
+	var discrimId = Order.map(function(ii) {return Math.floor(ii/nSide)%nDisc});
+	var sideId = Order.map(function(ii) {return ii%nSide});
+	
+	// Convert 'setId', 'discrimId', and 'sideId' into stimuli filenames
+	var FileName_S = [];
+	var FileName_P = [];
+	var FileName_N = [];
+	var DiscrimTally = new Array(nSets*nDisc);
+	DiscrimTally.fill(-1);
+	for (ii = 0; ii < Order.length; ii++) {
+	    // Set ID
+	    var cSetId;
+	    switch (setId[ii]) {
+	        case 0:
+	            cSetId = 'X';
+	            break;
+	            
+	        case 1:
+	            cSetId = 'Y';
+	            break;
+	            
+	        case 2:
+	            cSetId = 'Z';
+	            break;
+	    }
+	       
+	    // Discrim ID
+	    var cDiscrimId;
+	    switch (discrimId[ii]) {
+	        case 0:
+	            cDiscrimId = '1';
+	            break;
+	            
+	            case 1:
+	                cDiscrimId = '2';
+	                break;
+	                   
+	            case 2:
+	                cDiscrimId = '3';
+	                break;
+	    }
+	    
+	    // Side ID
+	    var cSideId;
+	    switch (sideId[ii]) {
+	        case 0:
+	            cSideId = 'L';
+	            break;
+	            
+	        case 1:
+	            cSideId = 'R';
+	            break;
+	    }
+	    
+	    // Root name
+	    var cRoot = cSetId+cDiscrimId+cSideId;
+	    
+	    // Populate FileName_S, FileName_P, FileName_N
+	    FileName_S.push('./Stimuli/'+cSetId+'/'+cRoot+'_S.bmp');
+	    FileName_P.push('./Stimuli/'+cSetId+'/'+cRoot+'_P.mp4');
+	    FileName_N.push('./Stimuli/'+cSetId+'/'+cRoot+'_N.mp4');
+	    
+	    // Determine tally
+	    var TallyIdx = (setId[ii]*nDisc) + discrimId[ii];
+	    DiscrimTally[TallyIdx] = DiscrimTally[TallyIdx] + 1;
+	    
+	    // Populate the Stim array (an array of JS objects)
+	    var Obj = {
+	        StimId: cRoot,
+	        FileName_S: FileName_S[ii],
+	        FileName_P: FileName_P[ii],
+	        FileName_N: FileName_N[ii],
+	        SetId: cSetId,
+	        DiscrimId: cDiscrimId,
+	        ReinforcedResponse: cSideId,
+	        RepetitionCount: DiscrimTally[TallyIdx]
+	    };
+	    Stim.push(Obj);
+	}
+	
+	//Stim = Stim.slice(0,5);
+	// Retrun the result
+	return Stim;
+}
+
+// WriteTaskIO
+function WriteTaskIO() {
+    var JsonPost = {
+        type:"POST",
+        url:'./WriteXIO.php',
+        dataType: 'json',
+        data: {FunctionCall: 'WriteTaskIO', Args: {
+            SubjectId: SubjectId,
+            ClientTimeZone: ClientTimeZone,
+            TaskIO: JSON.stringify(TaskIO)
+        }},
+        success: function(Obj,Textstatus){
+            if( !('error' in Obj) ){
+                return Obj.result;
+            }
+        }
+    };
+    Response = jQuery.ajax(JsonPost);
+    return new Promise(resolve => {resolve(Response)});
+}
+
+// Load jsPsych
+const jsPsych = initJsPsych({
+    on_finish: function () {
+        WriteTaskIO().then(function(Promise) {
+            var TargetUrl = Promise.TargetUrl;
+            window.location.replace(TargetUrl);
+        });
+    }
+});
+
+// EnterFullscreen
+var EnterFullscreen = {
+    type: jsPsychFullscreen,
+    message: '<p style="font-size:24px;">The experiment is ready to start</p>',
+    fullscreen_mode: true
+};
+
+// ExitFullscreen
+var ExitFullscreen = {
+    type: jsPsychFullscreen,
+    fullscreen_mode: false
+};
+
+// PreTrial
+var tIdx = -1;
+var PreTrial = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<p style="font-size:42px; color:blue;">+</p>',
+    choices: ['NO_KEYS'],
+    on_finish: function() {tIdx++;},
+    trial_duration: 500
+};
+
+// Set the Trial object
+var LastResponse;
+var LastCorrect;
+var LastRT;
+var Trial = {
+    type: jsPsychImageKeyboardResponse,
+    stimulus: function() {return jsPsych.timelineVariable('FileName_S',false);},
+    choices: ['ArrowLeft','ArrowRight'],
+    prompt: '',
+    response_ends_trial: true,
+    trial_duration: 5000,
+    render_on_canvas: true,
+    stimulus_width: 1344,
+    on_finish: function(data) {
+        
+        // Set the LastResponse and  variables
+        if (data.response===null) {
+            // No valid response has been made
+            LastResponse = '';
+            
+        } else if (data.response.toLowerCase()==='arrowleft') {
+            // A left response has been made
+            LastResponse = 'L';
+            
+        } else if (data.response.toLowerCase()==='arrowright') {
+            // A right response has been made
+            LastResponse = 'R';
+            
+        } else {
+            LastResponse = '#';
+        }
+        
+        // Get the ReinforcedResponse and set LastCorrect
+        var ReinforcedResponse = jsPsych.timelineVariable('ReinforcedResponse',false);
+        if (LastResponse==='') {
+            LastCorrect = null; // LastCorrect is not just a boolean variable;
+        } else if (LastResponse===ReinforcedResponse) {
+            LastCorrect = true;
+        } else {
+            LastCorrect = false;
+        }
+        
+        // Set the LastRT variable
+        LastRT = data.rt;
+    }
+};
+
+// Feedback_Correct
+var Feedback_Correct = {
+    type: jsPsychVideoKeyboardResponse,
+    stimulus: function() {return [jsPsych.timelineVariable('FileName_P',false)];},
+    choices: "NO_KEYS",
+    response_ends_trial: false,
+    trial_ends_after_video: true,
+    width: 1344
+};
+
+// Feedback_Incorrect
+var Feedback_Incorrect = {
+    type: jsPsychVideoKeyboardResponse,
+    stimulus: function() {return [jsPsych.timelineVariable('FileName_N',false)];},
+    choices: "NO_KEYS",
+    response_ends_trial: false,
+    trial_ends_after_video: true,
+    width: 1344
+};
+
+// Feedback_None
+var Feedback_None = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<p style="font-size:48px; color:red;">&#215;</p>',
+    choices: ['NO_KEYS'],
+    trial_duration: 5000
+};
+
+// Feedback_Pos
+var Feedback_Pos = {
+    timeline: [Feedback_Correct],
+    conditional_function: function(){
+        if (LastCorrect!==null) {
+            return LastCorrect;
+        } else {
+            return false;
+        }
+    }
+};
+
+// Feedback_Neg
+var Feedback_Neg = {
+    timeline: [Feedback_Incorrect],
+    conditional_function: function(){
+        if (LastCorrect!==null) {
+            return !LastCorrect;
+        } else {
+            return false;
+        }
+    }
+};
+
+// Feedback_Zero
+var Feedback_Zero = {
+    timeline: [Feedback_None],
+    conditional_function: function(){
+        if (LastCorrect===null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
+
+// PostTrialOps
+var PostTrialOps = {
+    type: jsPsychCallFunction,
+    async: false,
+    func: function() {
+        var TrialObject = {
+            tIdx: tIdx,
+            StimId: jsPsych.timelineVariable('StimId',false),
+            SetId: jsPsych.timelineVariable('SetId',false),
+            DiscrimId: jsPsych.timelineVariable('DiscrimId',false),
+            RepetitionCount: jsPsych.timelineVariable('RepetitionCount',false),
+            ReinforcedResponse: jsPsych.timelineVariable('ReinforcedResponse',false),
+            Response: LastResponse,
+            Correct: LastCorrect,
+            RT: LastRT
+        };
+        TaskIO.Trials.push(TrialObject);
+    }
+};
+
+// Promise chain
+var Stimuli;
+var TrialLoop;
+GetStimuli().then(function(P) {
+    Stimuli = P;
+    
+    // Get an array of the stimuli to preload
+    var UniqueS = Stimuli.map(function(s){return s.FileName_S;}).filter((value, index, array) => array.indexOf(value) === index);
+    var UniqueP = Stimuli.map(function(s){return s.FileName_P;}).filter((value, index, array) => array.indexOf(value) === index);
+    var UniqueN = Stimuli.map(function(s){return s.FileName_N;}).filter((value, index, array) => array.indexOf(value) === index);
+    var UniqueV = UniqueP.concat(UniqueN);
+    
+    // Set the Preload object
+    var Preload = {
+        type: jsPsychPreload,
+        images: UniqueS,
+        video: UniqueV
+    };
+    
+    // Set the trial loop
+    TrialLoop = {
+        timeline: [PreTrial,Trial,Feedback_Pos,Feedback_Neg,Feedback_Zero,PostTrialOps],
+        timeline_variables: Stimuli,
+        randomize_order: false
+    }
+    
+    // Run jsPsych
+    jsPsych.run([Preload,EnterFullscreen,TrialLoop,ExitFullscreen]);
+});
+
+// Run jsPsych with the top-level TrialLoop
+function OnBodyLoad() {
+    if (typeof jsPsych !== "undefined") {
+        document.body.innerHTML = 
+        '<div style="text-align:center; font-family:Open Sans; font-size:24px;' + 
+        'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);">' + 
+        '<p>Please wait.<br />The experiment is being prepared.</p>' + 
+        '</div>';
+    } else {
+        document.body.innerHTML = 
+        '<div style="text-align:center; font-family:Open Sans; font-size:24px; ' + 
+        'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);">' + 
+        'An error has occured.<br />' + 
+        'Please report error code #001 to <br />' + 
+        '<a href="mailto:s.berens@sussex.ac.uk">s.berens@sussex.ac.uk</a>. ' + 
+        'Thank you.</div>';
+    }
+}
+</script>
+</head>
+<body onload='OnBodyLoad()'>
+</body>
+</html>

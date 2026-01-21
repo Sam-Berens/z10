@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+<title>Questions</title>
+<link rel="icon" href="./Assets/Brain.png" type="image/x-icon" />
+<link rel="stylesheet" href="./Assets/w3.css">
+
+<!-- Get jQuery -->
+<script src="./Assets/jquery-3.6.3.min.js"></script>
+
+<!-- Get participant IDs passed in from URL -->
+<script src="./Assets/GetPpantIds.js"></script>
+
+<!-- Exclusion check -->
+<script src="/Assets/ExclusionCheck.js"></script>
+
+<!-- Get DateTime_Start and ClientTimeZone (and add to TaskIO)  -->
+<script src="./Assets/SetDateTime.js"></script>
+
+<style>
+body {
+    margin-left: 50px;
+    margin-top: 20px; 
+    margin-right: 50px; 
+}
+</style>
+
+<script>
+
+// Preallocate variables
+var DoB;
+var Gender;
+
+// Change radio button values
+var Primary = 'No';
+var Secondary = 'No';
+var ThinkDyscalculia = 'No';
+var DyscalculiaDiagnosis = 'No';
+var EnjoyMaths = 'No';
+var ThinkDyslexia = 'No';
+var DyslexiaDiagnosis = 'No';
+function ChangeRadioVar(Radio) {
+    if (Radio.name == 'PS') {
+        Primary = Radio.value;
+    } else if (Radio.name == 'SS') {
+        Secondary = Radio.value;
+    } else if (Radio.name == 'tDysc') {
+        ThinkDyscalculia = Radio.value;
+        if (ThinkDyscalculia==='Yes') {
+            document.getElementById("dDyscNo").disabled = false;
+            document.getElementById("dDyscYes").disabled = false;
+            document.getElementById("dDyscPNTS").disabled = false;
+            
+            document.getElementById("dDyscText1").style = 'color:black;';
+            document.getElementById("dDyscText2").style = 'color:black;';
+            document.getElementById("dDyscText3").style = 'color:black;';
+            document.getElementById("dDyscText4").style = 'color:black;';
+        } else if (ThinkDyscalculia==='PNTS') {
+            DyscalculiaDiagnosis = 'PNTS';
+            document.getElementById("dDyscPNTS").checked = true;
+            document.getElementById("dDyscNo").checked = false;
+            document.getElementById("dDyscYes").checked = false;
+            
+            document.getElementById("dDyscNo").disabled = true;
+            document.getElementById("dDyscYes").disabled = true;
+            document.getElementById("dDyscPNTS").disabled = true;
+            
+            document.getElementById("dDyscText1").style = 'color:LightGray;';
+            document.getElementById("dDyscText2").style = 'color:LightGray;';
+            document.getElementById("dDyscText3").style = 'color:LightGray;';
+            document.getElementById("dDyscText4").style = 'color:LightGray;';
+        } else {
+            DyscalculiaDiagnosis = 'No';
+            document.getElementById("dDyscNo").checked = true;
+            document.getElementById("dDyscYes").checked = false;
+            document.getElementById("dDyscPNTS").checked = false;
+            
+            document.getElementById("dDyscNo").disabled = true;
+            document.getElementById("dDyscYes").disabled = true;
+            document.getElementById("dDyscPNTS").disabled = true;
+            
+            document.getElementById("dDyscText1").style = 'color:LightGray;';
+            document.getElementById("dDyscText2").style = 'color:LightGray;';
+            document.getElementById("dDyscText3").style = 'color:LightGray;';
+            document.getElementById("dDyscText4").style = 'color:LightGray;';
+        }
+    } else if (Radio.name == 'dDysc') {
+        DyscalculiaDiagnosis = Radio.value;
+    } else if (Radio.name == 'Maths') {
+        EnjoyMaths = Radio.value;
+    } else if (Radio.name == 'tDysl') {
+        ThinkDyslexia = Radio.value;
+        if (ThinkDyslexia==='Yes') {
+            document.getElementById("dDyslNo").disabled = false;
+            document.getElementById("dDyslYes").disabled = false;
+            document.getElementById("dDyslPNTS").disabled = false;
+            
+            document.getElementById("dDyslText1").style = 'color:black;';
+            document.getElementById("dDyslText2").style = 'color:black;';
+            document.getElementById("dDyslText3").style = 'color:black;';
+            document.getElementById("dDyslText4").style = 'color:black;';
+        } else if (ThinkDyslexia==='PNTS') {
+            DyslexiaDiagnosis = 'PNTS';
+            document.getElementById("dDyslPNTS").checked = true;
+            document.getElementById("dDyslNo").checked = false;
+            document.getElementById("dDyslYes").checked = false;
+            
+            document.getElementById("dDyslNo").disabled = true;
+            document.getElementById("dDyslYes").disabled = true;
+            document.getElementById("dDyslPNTS").disabled = true;
+            
+            document.getElementById("dDyslText1").style = 'color:LightGray;';
+            document.getElementById("dDyslText2").style = 'color:LightGray;';
+            document.getElementById("dDyslText3").style = 'color:LightGray;';
+            document.getElementById("dDyslText4").style = 'color:LightGray;';
+        } else {
+            DyslexiaDiagnosis = 'No';
+            document.getElementById("dDyslNo").checked = true;
+            document.getElementById("dDyslYes").checked = false;
+            document.getElementById("dDyslPNTS").checked = false;
+            
+            document.getElementById("dDyslNo").disabled = true;
+            document.getElementById("dDyslYes").disabled = true;
+            document.getElementById("dDyslPNTS").disabled = true;
+            
+            document.getElementById("dDyslText1").style = 'color:LightGray;';
+            document.getElementById("dDyslText2").style = 'color:LightGray;';
+            document.getElementById("dDyslText3").style = 'color:LightGray;';
+            document.getElementById("dDyslText4").style = 'color:LightGray;';
+        }
+    } else if (Radio.name == 'dDysl') {
+        DyslexiaDiagnosis = Radio.value;
+    } else {
+        alert('An error has occured.');
+    }
+}
+
+// Submit form:
+function SubmitForm() {
+	DoB = document.getElementById('Input_DoB').value;
+	Gender = document.getElementById('Input_Gender').value;
+
+	var Chess = document.getElementById('Input_Chess').checked;
+	var Football = document.getElementById('Input_Football').checked;
+	var Golf = document.getElementById('Input_Golf').checked;
+	var Jigsaw = document.getElementById('Input_Jigsaw').checked;
+	var Monopoly = document.getElementById('Input_Monopoly').checked;
+	var Riding = document.getElementById('Input_Riding').checked;
+	var Rugby = document.getElementById('Input_Rugby').checked;
+	var Swimming = document.getElementById('Input_Swimming').checked;
+	var Tennis = document.getElementById('Input_Tennis').checked;
+	var Trivia = document.getElementById('Input_Trivia').checked;
+
+    const Flags = [
+        Chess, Football, Golf, Jigsaw, Monopoly,
+        Riding, Rugby, Swimming, Tennis, Trivia];
+
+    var Games = Flags.reduce((acc, flag, i) => acc | (flag << i),0);
+	
+	var Data = {
+	    SubjectId: SubjectId,
+	    ClientTimeZone: ClientTimeZone,
+		DoB: DoB,
+		Gender: Gender,
+		Primary: Primary,
+		Secondary: Secondary,
+		ThinkDyscalculia: ThinkDyscalculia,
+		DyscalculiaDiagnosis: DyscalculiaDiagnosis,
+		EnjoyMaths: EnjoyMaths,
+		ThinkDyslexia: ThinkDyslexia,
+		DyslexiaDiagnosis: DyslexiaDiagnosis,
+		Games: Games
+	};
+		
+ 	SendData(Data).then(function(Result) {
+ 	    // Send onwards after the WriteQuestionsIO action:
+ 	    window.location.replace(Result.TargetUrl);
+ 	});
+	
+}
+
+// Send Data:
+function SendData(Args){
+    var JsonPost = {
+        type: "POST",
+        url: './WriteXIO.php',
+        dataType: 'json',
+        data: {FunctionCall: 'WriteQuestionsIO', Args: Args},
+        success: function (Obj,Textstatus) {
+            if( !('error' in Obj) ) {
+                  return Obj.result;
+              }
+        }
+    }
+    Resp = jQuery.ajax(JsonPost);
+    return new Promise(resolve => {resolve(Resp)});
+}
+</script>
+</head>
+
+<body>
+<h1>Final questions...</h1>
+
+<p style="width:650px">
+Please note that all the information collected below will be kept in the strictest confidence and in an anonymised format.
+This means that the details you provide on this page will be stored separately from your identity.
+<u>Nobody other than the project supervisor</u> will be able to associate you with these details, and <u>this will only be done in case you wish to withdraw</u> from the study.<br /><br />
+<font style='color:red;'>*</font><i>Denotes a required field.</i>
+</p>
+
+<div class="w3-container" style="width:700px">
+<form action="javascript:SubmitForm();">
+<table class="w3-table w3-bordered">
+<tbody>
+	
+    <tr>
+        <th>In what year and month were you born?&nbsp;<font style='color:red;'>*</font></th>
+        <td><input type="month" id="Input_DoB" name="DoB" required></td>
+    </tr>
+    
+    <tr>
+        <th>What is your gender?&nbsp;<font style='color:red;'>*</font></th>
+        <td><input type="text" id="Input_Gender" name="Gender" required></td>
+    </tr>
+    
+    <tr>
+        <th>Did you attend <u>primary</u> school in the UK?&nbsp;<font style='color:red;'>*</font></th>
+        <td>
+            <input type="radio" name="PS" id="PSno" value="No" onclick="ChangeRadioVar(this)" checked> <label for="PSno">No</label>
+            <br />
+            <input type="radio" name="PS" id="PSyes" value="Yes" onclick="ChangeRadioVar(this)"> <label for="PSyes">Yes</label>
+        </td>
+    </tr>
+    
+    <tr>
+        <th>Did you attend <u>secondary</u> school in the UK?&nbsp;<font style='color:red;'>*</font></th>
+        <td>
+            <input type="radio" name="SS" id="SSno" value="No" onclick="ChangeRadioVar(this)" checked> <label for="SSno">No</label>
+            <br />
+            <input type="radio" name="SS" id="SSyes" value="Yes" onclick="ChangeRadioVar(this)"> <label for="SSyes">Yes</label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td colspan="2"><br /><i>Developmental <u>Dyscalculia</u> is a specific learning difficulty that affects mathematical abilities such as counting and arithmetic.</i><br /></td>
+    </tr>
+    
+    <tr>
+        <th>Do you think that you have <u>dyscalculia</u>?&nbsp;<font style='color:red;'>*</font></th>
+        <td>
+            <input type="radio" name="tDysc" id="tDyscNo" value="No" onclick="ChangeRadioVar(this)" checked> <label for="tDyscNo">No</label>
+            <br />
+            <input type="radio" name="tDysc" id="tDyscYes" value="Yes" onclick="ChangeRadioVar(this)"> <label for="tDyscYes">Yes</label>
+            <br />
+            <input type="radio" name="tDysc" id="tDyscPNTS" value="PNTS" onclick="ChangeRadioVar(this)"> <label for="tDyscPNTS">Prefer not to say</label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td><font id='dDyscText1' style='color:LightGray;'>If yes, have you ever received a diagnosis of <u>dyscalculia</u> from an <b>educational psychologist</b>?</font>&nbsp;<font style='color:red;'>*</font></td>
+        <td>
+            <input type="radio" name="dDysc" id="dDyscNo" value="No" onclick="ChangeRadioVar(this)" checked disabled> <label for="dDyscNo"><font id='dDyscText2' style='color:LightGray;'>No</font></label>
+            <br />
+            <input type="radio" name="dDysc" id="dDyscYes" value="Yes" onclick="ChangeRadioVar(this)" disabled> <label for="dDyscYes"><font id='dDyscText3' style='color:LightGray;'>Yes</font></label>
+            <br />
+            <input type="radio" name="dDysc" id="dDyscPNTS" value="PNTS" onclick="ChangeRadioVar(this)" disabled> <label for="dDyscPNTS"><font id='dDyscText4' style='color:LightGray;'>Prefer not to say</font></label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td>Do you enjoy learning about mathematics (e.g., by reading popular maths books and/or watching maths videos)?&nbsp;<font style='color:red;'>*</font></td>
+        <td>
+            <input type="radio" name="Maths" id="MathsNo" value="No" onclick="ChangeRadioVar(this)" checked> <label for="MathsNo">No</label>
+            <br />
+            <input type="radio" name="Maths" id="MathsYes" value="Yes" onclick="ChangeRadioVar(this)"> <label for="MathsYes">Yes</label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td colspan="2"><br /><i>Developmental <u>Dyslexia</u> is a specific learning difficulty that affects reading and spelling abilities.</i><br /></td>
+    </tr>
+    
+    <tr>
+        <th>Do you think that you have <u>dyslexia</u>?&nbsp;<font style='color:red;'>*</font></th>
+        <td>
+            <input type="radio" name="tDysl" id="tDyslNo" value="No" onclick="ChangeRadioVar(this)" checked> <label for="tDyslNo">No</label>
+            <br />
+            <input type="radio" name="tDysl" id="tDyslYes" value="Yes" onclick="ChangeRadioVar(this)"> <label for="tDyslYes">Yes</label>
+            <br />
+            <input type="radio" name="tDysl" id="tDyslPNTS" value="PNTS" onclick="ChangeRadioVar(this)"> <label for="tDyslPNTS">Prefer not to say</label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td><font id='dDyslText1' style='color:LightGray;'>If yes, have you ever received a diagnosis of <u>dyslexia</u> from an <b>educational psychologist</b>?</font>&nbsp;<font style='color:red;'>*</font></td>
+        <td>
+            <input type="radio" name="dDysl" id="dDyslNo" value="No" onclick="ChangeRadioVar(this)" checked disabled> <label for="dDyslNo"><font id='dDyslText2' style='color:LightGray;'>No</font></label>
+            <br />
+            <input type="radio" name="dDysl" id="dDyslYes" value="Yes" onclick="ChangeRadioVar(this)" disabled> <label for="dDyslYes"><font id='dDyslText3' style='color:LightGray;'>Yes</font></label>
+            <br />
+            <input type="radio" name="dDysl" id="dDyslPNTS" value="PNTS" onclick="ChangeRadioVar(this)" disabled> <label for="dDyslPNTS"><font id='dDyslText4' style='color:LightGray;'>Prefer not to say</font></label>
+        </td>
+    </tr>
+    
+    <tr>
+        <td>Which of the following <b><u><i>games</i></u></b> have you played frequently in the past (i.e. at least <b><u><i>once a week for at least 6 months</i></u></b>)? Please tick all that apply:&nbsp;<font style='color:red;'>*</font></td>
+        <td>
+            <input type="checkbox" id="Input_Chess" name="Chess" value="Chess">
+            <label for="Input_Chess"> Chess</label><br>
+            <input type="checkbox" id="Input_Football" name="Football" value="Football">
+            <label for="Input_Football"> Football</label><br>
+            <input type="checkbox" id="Input_Golf" name="Golf" value="Golf">
+            <label for="Input_Golf"> Golf</label><br>
+            <input type="checkbox" id="Input_Jigsaw" name="Jigsaw" value="Jigsaw">
+            <label for="Input_Jigsaw"> Jigsaw puzzle</label><br>
+            <input type="checkbox" id="Input_Monopoly" name="Monopoly" value="Monopoly">
+            <label for="Input_Monopoly"> Monopoly</label><br>
+            <input type="checkbox" id="Input_Riding" name="Riding" value="Riding">
+            <label for="Input_Riding"> Horse riding</label><br>
+            <input type="checkbox" id="Input_Rugby" name="Rugby" value="Rugby">
+            <label for="Input_Rugby"> Rugby</label><br>
+            <input type="checkbox" id="Input_Swimming" name="Swimming" value="Swimming">
+            <label for="Input_Swimming"> Swimming</label><br>
+            <input type="checkbox" id="Input_Tennis" name="Tennis" value="Tennis">
+            <label for="Input_Tennis"> Tennis</label><br>
+            <input type="checkbox" id="Input_Trivia" name="Trivia" value="Trivia">
+            <label for="Input_Trivia"> Trivia games</label><br>
+        </td>
+    </tr>
+    
+    <tr>
+        <td><br /><input type="submit" value="Submit"></td>
+        <td></td>
+    </tr>
+</tbody>
+</table>
+
+</form>
+</div>
+
+</body>
+</html>

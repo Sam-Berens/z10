@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://unpkg.com/jspsych@7.3.1"></script>
+<script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@1.1.2"></script>
+<script src="https://unpkg.com/@jspsych/plugin-video-keyboard-response@1.1.2"></script>
+<link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css" />
+
+<script>
+
+const jsPsych = initJsPsych();
+
+const preload = {
+    type: jsPsychPreload,
+    image: ['./Z/Z1L_S.bmp'],
+    video: ['./Z/Z1L_P.mp4']
+};
+
+var trial0 = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: 'Hello',
+    choices: ['Continue'],
+    prompt: ''
+};
+
+const trial1 = {
+    type: jsPsychImageKeyboardResponse,
+    stimulus: './Z/Z1L_S.bmp',
+    choices: 'NO_KEYS',
+    prompt: '',
+    trial_duration: 5000,
+    stimulus_width: 1344
+};
+
+const trial2 = {
+    type: jsPsychVideoKeyboardResponse,
+    stimulus: ['./Z/Z1L_P.mp4'],
+    choices: "NO_KEYS",
+    trial_ends_after_video: true,
+    width: 1344
+};
+
+const timeline = [preload,trial0,trial1,trial2];
+
+if (typeof jsPsych !== "undefined") {
+    jsPsych.run(timeline);
+} else {
+    document.body.innerHTML = '<div style="text-align:center; margin-top:50%; transform:translate(0,-50%);">You must be online to view the plugin demo.</div>';
+}
+
+</script>
+  
+</head>
+<body></body>
+</html>

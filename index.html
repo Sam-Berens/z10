@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Welcome</title>
+<link rel="icon" href="./Assets/Brain.png" type="image/x-icon" />
+<link rel="stylesheet" href="./Assets/w3.css">
+
+<style>
+body {
+    margin-left: 30px;
+    margin-top: 10px; 
+    margin-right: 30px; 
+}
+</style>
+
+<!-- Get participant IDs passed in from URL -->
+<script src="./Assets/GetPpantIds.js"></script>
+
+<!-- Exclusion check -->
+<script src="./Assets/ExclusionCheck.js"></script>
+
+<script>
+
+function OnBodyLoad() {
+    // Show form if needed:
+    if (GetUserInput) {
+        document.getElementById('IdForm').style.visibility = 'visible';
+    }
+    
+    // Add an event listener:
+    InputBox = document.getElementById("Input_SID");
+    InputBox.addEventListener("keydown", function(Event) {
+        // Number 13 is the "Enter" key on the keyboard
+        if (Event.keyCode === 13) {
+            // Cancel the default action, if needed
+            Event.preventDefault();
+            // Submit the form:
+            SubmitForm();
+        }
+    });
+}
+
+function SubmitForm() {
+    SubjectId = document.getElementById('Input_SID').value;
+    // Redirect
+    window.location.href = "./Task.html?SubjectId="+SubjectId+"#";
+}
+
+// --- Execute functions ---
+var GetUserInput = false;
+if (!SubjectId) {
+    // Get user input
+    GetUserInput = true;
+} else {
+    // Redirect
+    window.location.href = "./Task.html?SubjectId="+SubjectId+"#";
+}
+</script>
+
+</head>
+
+<body onload="OnBodyLoad()">
+<!-- BODY -->
+<div class="w3-container" style="width:700px;visibility:hidden" id = "IdForm">
+<h1>New participant</h1>
+<div>
+Please enter the a new participant ID
+<br />
+<br />
+</div>
+<form>
+<table class="w3-table">
+
+<tbody>
+	<tr>
+        <td width="280px"><input id="Input_SID" type="text" name="SID" placeholder="ID" size="26"></td>
+	</tr>
+	<tr>
+        <td width="280px"><button type="button" onclick="SubmitForm()">Submit</button></td>
+	</tr>
+</tbody>
+
+</table>
+</form>
+</div>
+</body>
+</html>
