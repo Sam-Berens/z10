@@ -1,7 +1,8 @@
 <?php
-
 header('Content-Type: application/json');
+require __DIR__ . '/Credentials.php';
 $Result = array();
+
 if(!isset($_POST['FunctionCall'])) {
 	die('No function name!');
 }
@@ -20,10 +21,6 @@ function FormatDateTimeStr($Str){
 }
 
 // Connect to the database:
-$Servername = "localhost";
-$Username = "samberen_B01a";
-$Password = "";
-$Dbname = "samberen_B01a_DataStore";
 $Conn = new mysqli($Servername, $Username, $Password, $Dbname);
 if($Conn->connect_error) {
 	die("Connection failed: " . $Conn->connect_error);
@@ -123,5 +120,4 @@ switch($_POST['FunctionCall']) {
 
 $Conn->close();
 echo json_encode($Result);
-
 ?>
