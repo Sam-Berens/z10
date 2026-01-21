@@ -28,7 +28,7 @@ TaskIO.Trials = [];
 <script src="./Assets/GetPpantIds.js"></script>
 
 <!-- Exclusion check -->
-<script src="/Assets/ExclusionCheck.js"></script>
+<script src="./Assets/ExclusionCheck.js"></script>
 
 <!-- Get DateTime_Start and ClientTimeZone (and add to TaskIO)  -->
 <script src="./Assets/SetDateTime.js"></script>
@@ -264,7 +264,7 @@ var Trial = {
     on_finish: function(data) {
         
         // Set the LastResponse and  variables
-        if (data.response===null) {
+        if (!Boolean(data.response)) {
             // No valid response has been made
             LastResponse = '';
             
