@@ -1,7 +1,9 @@
 function [DataTable00,DataTable01,DataTable02] = getDataTables()
+analysisDir = fileparts(mfilename('fullpath'));
+dataTablesFile = fullfile(analysisDir,'DataTables.mat');
 
-if exist('DataTables.mat','file')
-    X = load('DataTables.mat');
+if exist(dataTablesFile,'file')
+    X = load(dataTablesFile);
     DataTable00 = X.DataTable00;
     DataTable01 = X.DataTable01;
     DataTable02 = X.DataTable02;
@@ -59,5 +61,5 @@ DataTable02 = DataTable02(S,:);
 DataTable02 = DataTable02(DataTable02.RT>200,:);
 
 %% Save
-save('DataTables.mat','DataTable00','DataTable01','DataTable02');
+save(dataTablesFile,'DataTable00','DataTable01','DataTable02');
 return
