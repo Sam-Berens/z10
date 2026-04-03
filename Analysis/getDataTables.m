@@ -29,6 +29,9 @@ for iSubject = 1:size(Data,1)
 end
 close(fh);
 
+%% Compute response entropy
+[dH,zH,nValid] = getResponseEntropy(Data);
+
 %% Extract columns from Data to join
 Data2Add = table;
 Data2Add.SubjectId = Data.SubjectId;
@@ -36,6 +39,9 @@ Data2Add.ClientTimeZone = Data.ClientTimeZone;
 Data2Add.TaskDuration = Data.TaskDuration;
 Data2Add.Age = years(Data.DateTime_Start-Data.DoB);
 Data2Add = [Data2Add,Data(:,3:20)];
+Data2Add.dH = dH;
+Data2Add.zH = zH;
+Data2Add.nValid = nValid;
 
 %% Make the output tables
 DataTable00 = outerjoin(Data2Add,DataTable00);
@@ -54,4 +60,4 @@ DataTable02 = DataTable02(DataTable02.RT>200,:);
 
 %% Save
 save('DataTables.mat','DataTable00','DataTable01','DataTable02');
-retrun
+return
