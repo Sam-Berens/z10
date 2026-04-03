@@ -1,6 +1,6 @@
 function [Data] =  getData()
 
-Data = webread('https://c01.learningandinference.org/GetData.php');
+Data = webread('https://z10.learningandinference.org/GetData.php');
 Data = struct2table(Data);
 
 %% 1. SubjectId
@@ -8,7 +8,7 @@ Data.SubjectId = categorical(Data.SubjectId);
 
 %% 2. Birth month+year
 Data.DoB = datetime(Data.DoB,...
-    'InputFormat','yyyy-MM',...
+    'InputFormat','yyyy-MM-dd HH:mm:ss',...
     'TimeZone','Europe/London') ...
     + duration(30.44*24/2,0,0);
 % We add on 1/2 the average number of days in a month to minimise the
@@ -22,55 +22,55 @@ Data.Gender = categorical(...
     cellstr(char([female,male,nonbinary]*double('fmn')')));
 
 %% 4. UkPrimary
-Data.UkPrimary = categorical(Data.UkPrimary);
+Data.UkPrimary = binariseVar(Data.UkPrimary);
 
 %% 5. UkSecondary
-Data.UkSecondary = categorical(Data.UkSecondary);
+Data.UkSecondary = binariseVar(Data.UkSecondary);
 
 %% 6. ThinkDyscalculia
-Data.ThinkDyscalculia = categorical(Data.ThinkDyscalculia);
+Data.ThinkDyscalculia = binariseVar(Data.ThinkDyscalculia);
 
 %% 7. DyscalculiaDiagnosis
-Data.DyscalculiaDiagnosis = categorical(Data.DyscalculiaDiagnosis);
+Data.DyscalculiaDiagnosis = binariseVar(Data.DyscalculiaDiagnosis);
 
 %% 8. EnjoyMaths
-Data.EnjoyMaths = categorical(Data.EnjoyMaths);
+Data.EnjoyMaths = binariseVar(Data.EnjoyMaths);
 
 %% 9. ThinkDyslexia
-Data.ThinkDyslexia = categorical(Data.ThinkDyslexia);
+Data.ThinkDyslexia = binariseVar(Data.ThinkDyslexia);
 
 %% 10. DyslexiaDiagnosis
-Data.DyslexiaDiagnosis = categorical(Data.DyslexiaDiagnosis);
+Data.DyslexiaDiagnosis = binariseVar(Data.DyslexiaDiagnosis);
 
 %% 11. Chess
-Data.Chess = categorical(Data.Chess);
+Data.Chess = binariseVar(Data.Chess);
 
 %% 12. Football
-Data.Football = categorical(Data.Football);
+Data.Football = binariseVar(Data.Football);
 
 %% 13. Golf
-Data.Golf = categorical(Data.Golf);
+Data.Golf = binariseVar(Data.Golf);
 
 %% 14. Jigsaw
-Data.Jigsaw = categorical(Data.Jigsaw);
+Data.Jigsaw = binariseVar(Data.Jigsaw);
 
 %% 15. Monopoly
-Data.Monopoly = categorical(Data.Monopoly);
+Data.Monopoly = binariseVar(Data.Monopoly);
 
 %% 16. Riding
-Data.Riding = categorical(Data.Riding);
+Data.Riding = binariseVar(Data.Riding);
 
 %% 17. Rugby
-Data.Rugby = categorical(Data.Rugby);
+Data.Rugby = binariseVar(Data.Rugby);
 
 %% 18. Swimming
-Data.Swimming = categorical(Data.Swimming);
+Data.Swimming = binariseVar(Data.Swimming);
 
 %% 19. Tennis
-Data.Tennis = categorical(Data.Tennis);
+Data.Tennis = binariseVar(Data.Tennis);
 
 %% 20. Trivia
-Data.Trivia = categorical(Data.Trivia);
+Data.Trivia = binariseVar(Data.Trivia);
 
 %% 21-22. DateTime_*
 varNames = Data.Properties.VariableNames;
@@ -106,6 +106,11 @@ out.DateTime_Start = datetime(out.DateTime_Start,...
     'TimeZone','Europe/London');
 out = rmfield(out,'SubjectId');
 out = rmfield(out,'ClientTimeZone');
-out = rmfield(out,'GroupId');
-out = rmfield(out,'Pairs');
+return
+
+function [o] = binariseVar(in)
+y = strcmpi(in,'Yes');
+n = strcmpi(in,'No');
+o = double(y);
+o(~(y|n)) = NaN;
 return
